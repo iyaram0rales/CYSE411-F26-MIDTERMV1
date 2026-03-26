@@ -12,6 +12,28 @@ loadSessionBtn.addEventListener("click", loadSession);
 
 let currentProfile = null;
 
+// Q4A JSON Input Validation
+
+// creates a new function to validate data in profile
+function validProfile(data) {
+   // checks if all data is right type
+   if (
+        typeof data !== "object" ||
+        data === null ||
+        typeof data.username !== "string" ||
+        !Array.isArray(data.notifications) ||
+        typeof data.notifications !== "string"
+      ) {
+      
+      return null;
+   }
+
+   // only returns data if correct type
+   return {
+        username: data.username,
+        notifications: data.notifications
+    };
+}
 
 /* -------------------------
    Load Profile
@@ -21,12 +43,26 @@ function loadProfile() {
 
     const text = document.getElementById("profileInput").value;
 
+    let safe_parse;
+
+   // creates new element for safe parsing
+   try { 
+      safe_parse = JSON.parse(text);
+
+   } catch (e) {
+      alert("Invalid format");
+      return;
+   }
+
+   const profile = validProfile(safe_parse);
+
+   if(!profile) {
+      alert("Invalid data");
+      return;
+   }
    
-    const profile = JSON.parse(text);
-
-    currentProfile = profile;
-
-    renderProfile(profile);
+   currentProfile = profile;
+   renderProfile(profile);
 }
 
 
@@ -34,10 +70,12 @@ function loadProfile() {
    Render Profile
 -------------------------- */
 
+// Q4B Secure DOM Manipulation
 function renderProfile(profile) {
 
-    
-    document.getElementById("username").innerHTML = profile.username;
+    // changed from innerHTML to textContent
+    // prevents injection via html
+    document.getElementById("username").textContent = profile.username;
 
     const list = document.getElementById("notifications");
     list.innerHTML = "";
@@ -47,7 +85,7 @@ function renderProfile(profile) {
         const li = document.createElement("li");
 
         
-        li.innerHTML = n;
+        li.textContent = n;
 
         list.appendChild(li);
     }
@@ -69,12 +107,27 @@ function loadSession() {
 
     const stored = localStorage.getItem("profile");
 
-    if (stored) {
+    if (!stored) {
+       return ;
+    }
+    let safe_parse;
 
-        const profile = JSON.parse(stored);
+    try {
+       safe_parse = JSON.parse(stored);
+
+    } catch (e) {
+       alert("Invalid stored data");
+       return;
+    }
+   
+    const profile = validProfile(safe_parse);
+    
+   if (!profile) {
+        alert("Invalid stored profile");
+        return;
+    }    
 
         currentProfile = profile;
-
         renderProfile(profile);
     }
 }
