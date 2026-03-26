@@ -43,6 +43,7 @@ app.post("/login", (req, res) => {
     const username = req.body.username
     const password = req.body.password
 
+    // vulnerability
     const query =
         "SELECT * FROM users WHERE username = '" +
         username +
